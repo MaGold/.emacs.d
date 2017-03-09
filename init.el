@@ -19,10 +19,130 @@
 
 ;C-shift-f for flycheck-mode
 (global-set-key (kbd "C-S-f") 'flycheck-mode)
+
+; copy current line, comment it out, and paste it to next line
+(defun copy-comment-paste ()
+  (interactive)
+  (save-excursion
+    (let ((current-line (thing-at-point 'line t)))
+      (goto-char (line-beginning-position))
+      (insert current-line)
+      (comment-region (line-beginning-position 0)
+                      (line-end-position 0)))))
+
+(global-set-key (kbd "C-S-m") 'copy-comment-paste) 
+;; Same as above but this leaves cursor at beginning of new line
+;; (defun copy-comment-paste ()
+;;   (interactive)
+;;   (save-excursion
+;;     (let ((current-line (thing-at-point 'line t)))
+;;       (comment-region (line-beginning-position) (line-end-position))
+;;       (goto-char (line-end-position))
+;;       (open-line 1)
+;;       (forward-line)
+;;       (insert current-line)
+;;       ))
+;;   (forward-line))
+
 ;END MY KEYBINDINGS
 
-; y or n is enough
+;; y or n is enough
 (defalias 'yes-or-no-p 'y-or-n-p)
+
+;; set the size of rendered latex images in org mode
+;; (setq org-format-latex-options (plist-put org-format-latex-options :scale 2))
+
+;; don't show asterix in *bold* in org mode, etc...
+(setq org-hide-emphasis-markers t)
+
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cc" 'org-capture)
+(global-set-key "\C-cb" 'org-iswitchb)
+
+;; Capture templates
+(setq org-capture-templates
+      '(("n"               ; key
+         "Note"            ; name
+         entry             ; type
+         (file+headline "~/Dropbox/org/notes.org" "Notes")  ; target
+         "* %? %(org-set-tags)  :note: \n:PROPERTIES:\n:Created: %U\n:Linked: %A\n:END:\n%i"  ; template
+         :prepend t        ; properties
+         :empty-lines 1    ; properties
+         :created t        ; properties
+        )
+	("w"               ; key
+         "Weights"         ; name
+         table-line        ; type
+         (file "~/Dropbox/org/habits/weights.org" )  ; target
+	 "|%U|%^{weight}|%^{comment}|"
+         :prepend t        ; properties
+         :kill-buffer t    ; properties
+        )
+       	("a"               ; key
+	 "Article"         ; name
+	 entry             ; type
+	 (file+headline "~/Dropbox/org/phd.org" "Article")  ; target
+	 "* %^{Title} %(org-set-tags)  :article: \n:PROPERTIES:\n:Created: %U\n:Linked: %a\n:END:\n%i\nBrief description:\n%?"  ; template
+	 :prepend t        ; properties
+	 :empty-lines 1    ; properties
+	 :created t        ; properties
+	 )
+	("q"               ; key
+	 "Quick note"      ; name
+	 entry             ; type
+	 (file "~/Dropbox/org/quicknotes.org")  ; target
+	 "* %?\nEntered on %U\n" ;template
+	 :prepend t        ; properties
+	 :empty-lines 1    ; properties
+	 :created t        ; properties
+	 )
+	("j" "Journal" entry (file+datetree "~/Dropbox/org/journal.org") "* \n%?\n" :clock-in t)
+	("k" "Journal-night" entry (file+datetree "~/Dropbox/org/journal-night.org") "* \n%?\n" :clock-in t)
+        ))
+
+;; indentation for lists in org mode
+(setq org-list-indent-offset 2)
+
+
+;; can't seem to export to pdf with a bibliography without this
+ (setq org-latex-pdf-process
+       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %b"
+         "bibtex %b"
+         "makeindex %b"
+         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %b"
+         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %b"))
+
+
+
+
+
+
+
+;; where to store back-up files
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+
+
+;commenting
+;; Original idea from
+;; http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
+(defun comment-dwim-line (&optional arg)
+  "Replacement for the comment-dwim command.
+        If no region is selected and current line is not blank and we are not at the end of the line,
+        then comment current line.
+        Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+  (interactive "*P")
+  (comment-normalize-vars)
+  (if (and (not (region-active-p)) (not (looking-at "[ \t]*$")))
+      (comment-or-uncomment-region (line-beginning-position) (line-end-position))
+    (comment-dwim arg)))
+(global-set-key "\M-;" 'comment-dwim-line)
+
+
 
 ;-------------------------------------------------------------------------------------------------------
 ;; Requisites: Emacs >= 24
@@ -43,7 +163,14 @@
 
 ;; make more packages available with the package installer
 (setq to-install
-      '(python-mode magit yasnippet jedi auto-complete autopair find-file-in-repository flycheck workgroups2))
+      '(python-mode magit yasnippet jedi auto-complete autopair find-file-in-repository flycheck workgroups2 god-mode org-ref interleave elpy))
+
+
+;; (add-to-list 'package-archives
+;;              '("elpy" . "https://jorgenschaefer.github.io/packages/"))
+
+
+
 
 (mapc 'install-if-needed to-install)
 
@@ -66,14 +193,14 @@
  ac-candidate-limit 20)
 
 ;; ;; Python mode settings
-(require 'python-mode)
-(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-(setq py-electric-colon-active t)
-(add-hook 'python-mode-hook 'autopair-mode)
-(add-hook 'python-mode-hook 'yas-minor-mode)
+;; (require 'python-mode)
+;; (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+;; (setq py-electric-colon-active t)
+;; (add-hook 'python-mode-hook 'autopair-mode)
+;; (add-hook 'python-mode-hook 'yas-minor-mode)
 
 ;; ;; Jedi settings
-(require 'jedi)
+;;(require 'jedi)
 ;; It's also required to run "pip install --user jedi" and "pip
 ;; install --user epc" to get the Python side of the library work
 ;; correctly.
@@ -92,7 +219,7 @@
 ;;             (local-set-key (kbd "M-.") 'jedi:goto-definition)))
 
 
-(add-hook 'python-mode-hook 'auto-complete-mode)
+;; (add-hook 'python-mode-hook 'auto-complete-mode)
 
 (ido-mode t)
 
@@ -129,11 +256,15 @@
 
 
 ;set default file search directory
-(setq default-directory "/cygdrive/d/projects/")
+;;(setq default-directory "/cygdrive/d/projects/")
 
 ; turn on line numberings
 ;(global-linum-mode 1)
 (add-hook 'python-mode-hook #'linum-mode)
+
+(elpy-enable)
+
+(setq elpy-rpc-python-command "python3")
 
 ;; -------------------- extra nice things --------------------
 ;; use shift to move around windows
@@ -150,6 +281,40 @@
 (setq 
   uniquify-buffer-name-style 'post-forward
   uniquify-separator ":")
+
+(require 'org-ref-latex)
+(require 'org-ref-url-utils)
+
+(require 'org-ref-pdf)
+
+;; increase size of rendered latex images
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 2))
+
+;; darker zenburn theme
+(with-eval-after-load "zenburn-theme"
+  (zenburn-with-color-variables
+    (custom-theme-set-faces
+     'zenburn
+     ;; original `(default ((t (:foreground ,zenburn-fg :background ,zenburn-bg))))
+     `(default ((t (:foreground ,zenburn-fg :background ,zenburn-bg-2)))))))
+
+(setq org-agenda-files (list "~/Dropbox/org/references/articles.org"
+			     "~/Dropbox/org/quicknotes.org"
+			     "~/Dropbox/org/journal.org"
+			     "~/Dropbox/org/birthdays.org"
+			     ))
+(setq org-ref-notes-directory "~/Dropbox/org/references/notes"
+      org-ref-bibliography-notes "~/Dropbox/org/references/articles.org"
+      org-ref-default-bibliography '("~/Dropbox/org/references/articles.bib")
+      org-ref-pdf-directory "~/Dropbox/org/references/pdfs/")
+
+
+
+(setq helm-bibtex-bibliography "~/Dropbox/org/references/articles.bib"
+      helm-bibtex-library-path "~/Dropbox/org/references/pdfs"
+      helm-bibtex-notes-path "~/Dropbox/org/references/articles.org")
+
+
 
 
 ;workgroups stuff
