@@ -79,15 +79,7 @@
          :prepend t        ; properties
          :kill-buffer t    ; properties
         )
-       	("a"               ; key
-	 "Article"         ; name
-	 entry             ; type
-	 (file+headline "~/Dropbox/org/phd.org" "Article")  ; target
-	 "* %^{Title} %(org-set-tags)  :article: \n:PROPERTIES:\n:Created: %U\n:Linked: %a\n:END:\n%i\nBrief description:\n%?"  ; template
-	 :prepend t        ; properties
-	 :empty-lines 1    ; properties
-	 :created t        ; properties
-	 )
+
 	("q"               ; key
 	 "Quick note"      ; name
 	 entry             ; type
@@ -114,17 +106,11 @@
          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %b"))
 
 
-
-
-
-
-
 ;; where to store back-up files
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
-
 
 
 ;commenting
@@ -144,6 +130,58 @@
 
 
 
+
+
+;; Organize todos
+;;
+;;-----------------------------------------------------------------------
+(setq org-todo-keywords
+  '(
+    (sequence "TODO" "|" "DONE")
+    (type "READ")
+))
+
+(setq org-todo-keywords
+       '((sequence "TODO" "READ" "STUDY" "PAPERS" "|" "DONE")))
+
+
+(setq org-todo-keyword-faces
+  '(("TODO" . (:foreground "#ff39a3" :weight bold))
+("READ" . (:foreground "#E35DBF" :weight bold))
+;;("STUDY" . (:foreground "white" :background "#4d4d4d" :weight bold))
+("STUDY" . (:foreground "white" :weight bold))
+("PAPERS" . (:foreground "#b3c6e5" :weight bold))
+))
+
+(setq org-agenda-sorting-strategy 
+      '((agenda todo-state-up)))
+
+
+
+;; (setq org-agenda-category-icon-alist
+;;       nil
+;;       )
+
+;; (setq org-agenda-sorting-strategy 
+;;       '((agenda todo-state-up)
+;;         (todo priority-down tag-up)
+;;         (tags priority-down tag-keep)
+;;         (search category-keep)))
+
+
+;; (setq org-agenda-sorting-strategy 
+;;       '((agenda tag-up)
+;;         (todo priority-down tag-up)
+;;         (tags priority-down tag-keep)
+;;         (search category-keep)))
+
+
+;; ;; Global agenda: sort todos by category
+;; (setq org-agenda-sorting-strategy
+;;       '((agenda category-up)
+;;         (todo priority-down category-up)
+;;         (tags priority-down category-keep)
+;;         (search category-keep)))
 ;-------------------------------------------------------------------------------------------------------
 ;; Requisites: Emacs >= 24
 (require 'package)			
@@ -168,9 +206,6 @@
 
 ;; (add-to-list 'package-archives
 ;;              '("elpy" . "https://jorgenschaefer.github.io/packages/"))
-
-
-
 
 (mapc 'install-if-needed to-install)
 
