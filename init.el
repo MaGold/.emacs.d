@@ -46,6 +46,9 @@
 
 ;END MY KEYBINDINGS
 
+(setq holiday-bahai-holidays nil)
+(setq holiday-islamic-holidays nil)
+
 ;; y or n is enough
 (defalias 'yes-or-no-p 'y-or-n-p)
 
@@ -84,6 +87,15 @@
 	 "Quick note"      ; name
 	 entry             ; type
 	 (file "~/Dropbox/org/quicknotes.org")  ; target
+	 "* %?\nEntered on %U\n" ;template
+	 :prepend t        ; properties
+	 :empty-lines 1    ; properties
+	 :created t        ; properties
+	 )
+	("t"               ; key
+	 "Time Log"      ; name
+	 entry             ; type
+	 (file "~/Dropbox/org/timelog.org")  ; target
 	 "* %?\nEntered on %U\n" ;template
 	 :prepend t        ; properties
 	 :empty-lines 1    ; properties
@@ -135,32 +147,29 @@
 ;; Organize todos
 ;;
 ;;-----------------------------------------------------------------------
-(setq org-todo-keywords
-  '(
-    (sequence "TODO" "|" "DONE")
-    (type "READ")
-))
+;; (setq org-todo-keywords
+;;   '(
+;;     (sequence "TODO" "|" "DONE")
+;;     (type "READ")
+;; ))
 
 (setq org-todo-keywords
-       '((sequence "TODO" "READ" "STUDY" "PAPERS" "|" "DONE")))
+       '((sequence "TODO" "READ" "STUDY" "PAPERS" "CODE" "ANKI" "|" "DONE")))
 
 
 (setq org-todo-keyword-faces
   '(("TODO" . (:foreground "#ff39a3" :weight bold))
-("READ" . (:foreground "#E35DBF" :weight bold))
+("READ" . (:foreground "#c4efcd" :weight bold))
 ;;("STUDY" . (:foreground "white" :background "#4d4d4d" :weight bold))
 ("STUDY" . (:foreground "white" :weight bold))
 ("PAPERS" . (:foreground "#b3c6e5" :weight bold))
+("CODE" . (:foreground "#bc86e0" :weight bold))
+("ANKI" . (:foreground "#e2ab58" :weight bold))
 ))
 
+;; sort by todo state (for todo list) and then time (for daily logs)
 (setq org-agenda-sorting-strategy 
-      '((agenda todo-state-up)))
-
-
-
-;; (setq org-agenda-category-icon-alist
-;;       nil
-;;       )
+      '((agenda todo-state-up time-up)))
 
 ;; (setq org-agenda-sorting-strategy 
 ;;       '((agenda todo-state-up)
@@ -335,7 +344,8 @@
 
 (setq org-agenda-files (list "~/Dropbox/org/references/articles.org"
 			     "~/Dropbox/org/quicknotes.org"
-			     "~/Dropbox/org/journal.org"
+			     ;;"~/Dropbox/org/journal.org"
+			     "~/Dropbox/org/timelog.org"
 			     "~/Dropbox/org/birthdays.org"
 			     ))
 (setq org-ref-notes-directory "~/Dropbox/org/references/notes"
